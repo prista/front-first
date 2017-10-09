@@ -1,4 +1,5 @@
 var watchId = null;
+var prevCoords = null;
 
 var homeCoords = {
   latitude: 53.641901,
@@ -56,6 +57,13 @@ function displayLocation(position) {
   // в противном случае ее не нужно будет вызывать при каждом вызове displayLocation
   if (map == null) {
     showMap(position.coords);
+    prevCoords = position.coords;
+  } else {
+    var meters = computeDistance(position.coords, prevCoords);
+    if (meters > 20) {
+        scrollMapToPosition(position.coords);
+        prevCoords = null;
+    }
   }
 }
 
@@ -90,13 +98,14 @@ function displayError(error) {
   div.innerHTML += "... checking again with timeout=" + options.timeout;
 }
 
+// вычисляет расстояние между двумя точками
 function computeDistance(startCoords, destCoords) {
   var startLatRads = degreesToRadians(startCoords.latitude);
   var startLongRads = degreesToRadians(startCoords.longitude);
   var destLatRads = degreesToRadians(destCoords.latitude);
   var destLongRads = degreesToRadians(destCoords.longitude);
 
-  var Radius = 6371;
+  var Radius = 6371; // радиус Земли
   var distance = Math.acos(Math.sin(startLatRads) * Math.sin(destLatRads) +
     Math.cos(startLatRads) * Math.cos(destLatRads) *
     Math.cos(startLongRads - destLongRads)) * Radius;
@@ -114,6 +123,7 @@ function degreesToRadians(degrees) {
 
 var map;
 
+// генерируем карту
 function showMap(coords) {
   var googleLatAndLong = new google.maps.LatLng(coords.latitude,coords.longitude);
 
@@ -153,4 +163,18 @@ function addMarker(map, latlong, title, content) {
   google.maps.event.addListener(marker, "click", function() {
     infoWindow.open(map);
   })
+}
+
+//
+function scrollMapToPosition(coords) {
+  var latitude = coords.latitude;
+  var longitude = coords.longitude;
+  var latlong = new google.maps.LatLng(latitude, longitude);
+
+  // Метод painTo объекта map принимает объект LatLng и прокручивает карту
+  // таким образом, чтобы текущее местоположение отображалось в ее центре
+  map.panTo(latlong);
+  addMarker(map, latlong, "Your new location", "You moved to: " +
+    latitude + ", " + longitude);
+
 }
