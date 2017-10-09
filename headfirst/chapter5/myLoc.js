@@ -62,7 +62,11 @@ function displayLocation(position) {
     var meters = computeDistance(position.coords, prevCoords);
     if (meters > 20) {
         scrollMapToPosition(position.coords);
+<<<<<<< HEAD
         prevCoords = position.coords;
+=======
+        prevCoords = null;
+>>>>>>> 8fe0cdfe12bb24fe890550c1ce42a509dd3132d2
     }
   }
 }
